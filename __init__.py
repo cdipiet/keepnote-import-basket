@@ -8,7 +8,7 @@
 #
 #  KeepNote
 #  Copyright (c) 2008-2009 Matt Rasmussen
-#  Author: Nihil <nihil@blue.dyn-o-saur.com>,Matt Rasmussen <rasmus@mit.edu>
+#  Author: Corrado Di Pietro <corrado.dipietro@tiscali.it>,Nihil <nihil@blue.dyn-o-saur.com>,Matt Rasmussen <rasmus@mit.edu>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 # Version 0.5 initial release
 # 28 July 2010
 # Version 0.6 improved Basket HTML --> Keepnote HTML transformation
+# 10 August 2010
+# Version 0.7 Fixed HTML entities management
 
 
 import keepnote
@@ -572,9 +574,14 @@ class HTMLFilter(HTMLParser.HTMLParser):
     
     def handle_entityref(self, ref):        
         if self.stack:
-            self.stack[len(self.stack)-1] += "&%(ref)s" % locals()
-            if htmlentitydefs.entitydefs.has_key(ref):
-                self.stack[len(self.stack)-1] += ";"
+            if ref == "gt" or ref == "lt":
+                self.stack[len(self.stack)-1] += "&%(ref)s" % locals()
+                if htmlentitydefs.entitydefs.has_key(ref):
+                    self.stack[len(self.stack)-1] += ";"
+            else:
+                if htmlentitydefs.entitydefs.has_key(ref):
+                    self.stack[len(self.stack)-1] += htmlentitydefs.entitydefs[ref]
+
 
     def handle_charref(self, ref):          
         if self.stack:
