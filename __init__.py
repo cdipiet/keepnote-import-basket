@@ -8,7 +8,7 @@
 #
 #  KeepNote
 #  Copyright (c) 2008-2009 Matt Rasmussen
-#  Author: Corrado Di Pietro <corrado.dipietro@tiscali.it>,Nihil <nihil@blue.dyn-o-saur.com>,Matt Rasmussen <rasmus@mit.edu>
+#  Author: Nihil <nihil@blue.dyn-o-saur.com>,Matt Rasmussen <rasmus@mit.edu>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -406,7 +406,7 @@ def write_node(node, html_content):
         Write the note file associated to the node
     """
     fname = node.get_data_file()
-    datastring = unescape(''.join(html_content))
+    datastring = ''.join(html_content)
     out = codecs.open(fname, "w","utf8")
     out.write(HTML_HEAD + datastring + HTML_TAIL)
     out.close() 
@@ -570,10 +570,16 @@ class HTMLFilter(HTMLParser.HTMLParser):
         if self.current_tag.lower() != 'style':
             self.stack.append(data)
     
-    def handle_entityref(self, data):
+    def handle_entityref(self, ref):        
         if self.stack:
-            self.stack[len(self.stack)-1] += htmlentitydefs.entitydefs[data]
-    
+            self.stack[len(self.stack)-1] += "&%(ref)s" % locals()
+            if htmlentitydefs.entitydefs.has_key(ref):
+                self.stack[len(self.stack)-1] += ";"
+
+    def handle_charref(self, ref):          
+        if self.stack:
+            self.stack[len(self.stack)-1] += "&#%(ref)s;" % locals()
+
     def __html_start_tag(self, tag, attrs):
         html_attrs = self.__html_attrs(attrs)
         st = ''
